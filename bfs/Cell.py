@@ -3,11 +3,10 @@ from typing import List
 
 class Cell:
     def __init__(s, x, y) -> None:
-        s.visited = False
-        s.north_wall = True
-        s.south_wall = True
-        s.east_wall = True
-        s.west_wall = True
+        # s.north_wall = True
+        # s.south_wall = True
+        # s.east_wall = True
+        # s.west_wall = True
         s.entry = False
         s.exit = False
         s.neigbours: List['Cell'] = []
@@ -18,16 +17,33 @@ class Cell:
     def __str__(s) -> str:
         return f"cell({s.x}, {s.y})"
 
+    def __eq__(s, ins: object) -> bool:
+        if not isinstance(ins, Cell):
+            return NotImplemented
+        return s.x == ins.x and s.y == ins.y
+
     def before(s, maze) -> 'Cell':
-        return maze[s.x - 1][s.y]
+        return maze[s.y][s.x - 1]
 
     def after(s, maze) -> 'Cell':
-        return maze[s.x + 1][s.y]
+        return maze[s.y][s.x + 1]
 
     def abbove(s, maze) -> 'Cell':
-        return maze[s.x][s.y - 1]
+        return maze[s.y - 1][s.x]
 
     def under(s, maze) -> 'Cell':
-        return maze[s.x][s.y + 1]
+        return maze[s.y + 1][s.x]
+
+    def break_north(cell: 'Cell') -> None:
+        cell.val -= 1
+
+    def break_est(cell: 'Cell') -> None:
+        cell.val -= 2
+
+    def break_south(cell: 'Cell') -> None:
+        cell.val -= 4
+
+    def break_west(cell: 'Cell') -> None:
+        cell.val -= 8
 
     # methods to overload [ == ]

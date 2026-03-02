@@ -1,6 +1,6 @@
 from typing import List, Tuple
 from bfs.Cell import Cell
-from bfs.helpers import indexof
+import random
 
 
 class Gen:
@@ -11,11 +11,12 @@ class Gen:
         s.maze: List[List[Cell]] = [
             [Cell(x, y) for x in range(s.width)] for y in range(s.height)
             ]
-        s.entry: Cell = s.maze[en[0]][en[1]]
-        s.exit: Cell = s.maze[ex[0]][ex[1]]
+        s.entry: Cell = s.maze[en[1]][en[0]]
+        s.exit: Cell = s.maze[ex[1]][ex[0]]
         s.entry.entry = True
         s.exit.exit = True
-        s.all: List[Cell]
+        s.nib: List[Cell] = []
+        s.visited: list[Cell] = []
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -24,42 +25,68 @@ class Gen:
         return s.maze
 
     def get_rand_choice(s, all: List[Cell]) -> Cell:
-        return all[len(all) - 1]
+        return random.choice(all)
 
     def break_wall(s, main_cell: Cell, target: Cell) -> None:
-        pass
+        if main_cell.y != 0:
+            abbove: Cell = main_cell.abbove(s.maze)
+            if abbove == target:
+                main_cell.break_north()
+                target.break_south()
+                return
+        if main_cell.y != s.height - 1:
+            under: Cell = main_cell.under(s.maze)
+            if under == target:
+                main_cell.break_south()
+                target.break_north()
+                return
+        if main_cell.x != 0:
+            before: Cell = main_cell.before(s.maze)
+            if before == target:
+                main_cell.break_west()
+                target.break_est()
+                return
+        if main_cell.x != s.width - 1:
+            after: Cell = main_cell.after(s.maze)
+            if after == target:
+                main_cell.break_est()
+                target.break_west()
+                return
 
     def conf_nighbours(s, c: Cell) -> None:
         if c.x != 0 and c.x < s.width - 1:
             # add s.x - 1 and s.x + 1
-            c.neigbours.append(c.before(s.maze)) if not c.before(s.maze).visited else None
-            c.neigbours.append(c.after(s.maze)) if not c.after(s.maze).visited else None
+            (c.neigbours.append(c.before(s.maze)))
+            (c.neigbours.append(c.after(s.maze)))
         elif c.x > 0:
             # add s.x - 1
-            c.neigbours.append(c.before(s.maze)) if not c.before(s.maze).visited else None
+            (c.neigbours.append(c.before(s.maze)))
         elif c.x < s.width - 1:
             # add s.x + 1
-            c.neigbours.append(c.after(s.maze)) if not c.after(s.maze).visited else None
+            (c.neigbours.append(c.after(s.maze)))
 
         if c.y != 0 and c.y < s.height - 1:
             # add c.y - 1 and c.y + 1
-            c.neigbours.append(c.abbove(s.maze)) if not c.abbove(s.maze).visited else None
-            c.neigbours.append(c.under(s.maze)) if not c.under(s.maze).visited else None
+            (c.neigbours.append(c.abbove(s.maze)))
+            (c.neigbours.append(c.under(s.maze)))
         elif c.y > 0:
             # add c.y - 1
-            c.neigbours.append(c.abbove(s.maze)) if not c.abbove(s.maze).visited else None
+            (c.neigbours.append(c.abbove(s.maze)))
         elif c.y < s.height - 1:
             # add s.y + 1
-            c.neigbours.append(c.under(s.maze)) if not c.under(s.maze).visited else None
+            (c.neigbours.append(c.under(s.maze)))
 
     def roll(s) -> None:
-        s.all = s.get_valid_neighbours(s.entry)
-        main_cell: Cell = s.entry
-        while (len(s.all) > 0):
-            for target in s.all:
-                s.break_wall(main_cell, target)
-                s.all = [*s.all, *s.get_valid_neighbours(target)]
-                s.all.pop(indexof(s.all, target))
+        s.visited.append(s.entry)
+        queue: List[Cell] = [s.entry]
+        for ele in queue:
+            nighbours = s.get_valid_neighbours(ele)
+            # random.shuffle(nighbours)
+            for nib in nighbours:
+                if nib not in s.visited:
+                    s.visited.append(nib)
+                    s.break_wall(ele, nib)
+                    queue.append(nib)
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
-        return cell.neigbours
+        return [cell for cell in cell.neigbours if cell not in s.visited]

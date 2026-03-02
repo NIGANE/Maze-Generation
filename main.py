@@ -11,18 +11,19 @@ def print_maze(generated: Gen) -> None:
 
 data: dict = {
     'entry': (0, 0),
-    'exit': (4, 4),
-    'h': 5,
-    'w': 5
+    'exit': (3, 3),
+    'h': 4,
+    'w': 4
 }
 
 
 def main() -> None:
-    gen = Gen(5, 5, data['entry'], data['exit'])
+    gen = Gen(data['w'], data['h'], data['entry'], data['exit'])
     print_maze(gen)
-    maze = gen.get_map()
-    cell = maze[0][0]
-    print(cell.visited)
+    gen.roll()
+    print_maze(gen)
+
+
 
 
 
