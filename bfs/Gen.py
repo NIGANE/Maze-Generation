@@ -17,6 +17,7 @@ class Gen:
         s.exit.exit = True
         s.nib: List[Cell] = []
         s.visited: list[Cell] = []
+        s.broken_walls: int = 0
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -28,6 +29,8 @@ class Gen:
         return random.choice(all)
 
     def break_wall(s, main_cell: Cell, target: Cell) -> None:
+        main_cell.pt.append(target)
+        s.broken_walls += 1
         if main_cell.y != 0:
             abbove: Cell = main_cell.abbove(s.maze)
             if abbove == target:
@@ -76,17 +79,42 @@ class Gen:
             # add s.y + 1
             (c.neigbours.append(c.under(s.maze)))
 
-    def roll(s) -> None:
+    def gen_bfs(s) -> None:
         s.visited.append(s.entry)
         queue: List[Cell] = [s.entry]
         for ele in queue:
             nighbours = s.get_valid_neighbours(ele)
-            # random.shuffle(nighbours)
+            random.shuffle(nighbours)
             for nib in nighbours:
                 if nib not in s.visited:
                     s.visited.append(nib)
                     s.break_wall(ele, nib)
                     queue.append(nib)
+
+    def gen_dfs(s) -> None:
+        s.visited.append(s.entry)
+        stack: List[Cell] = [s.entry]
+        while s.broken_walls < (s.width * s.height) - 1:
+            nighbours = s.get_valid_neighbours(stack[-1])
+            if len(nighbours) == 0:
+                stack.pop()
+            else:
+                target: Cell = random.choice(nighbours)
+                s.visited.append(target)
+                s.break_wall(stack[-1], target)
+                stack.append(target)
+
+    def solve_dfs(s) -> None:
+        s.visited = [s.entry]
+        stack: List[Cell] = [s.entry]
+
+        while stack[-1] != s.exit:
+            cur: Cell = stack[-1]
+            if len(cur.pt) > 0:
+                target: Cell = random.choice(cur.pt)
+                s.visited.append(target)
+
+
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
         return [cell for cell in cell.neigbours if cell not in s.visited]

@@ -20,11 +20,8 @@ data: dict = {
 def main() -> None:
     gen = Gen(data['w'], data['h'], data['entry'], data['exit'])
     print_maze(gen)
-    gen.roll()
+    gen.gen_dfs()
     print_maze(gen)
-
-
-
 
 
 main() if __name__ == "__main__" else None

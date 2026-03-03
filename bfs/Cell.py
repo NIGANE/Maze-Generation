@@ -10,8 +10,9 @@ class Cell:
         s.entry = False
         s.exit = False
         s.neigbours: List['Cell'] = []
-        s.x = x
-        s.y = y
+        s.pt: List['Cell'] = []
+        s.x: int = x
+        s.y: int = y
         s.val = 15
 
     def __str__(s) -> str:
