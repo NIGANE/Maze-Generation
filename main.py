@@ -1,4 +1,6 @@
 from bfs.Gen import Gen
+import curses
+from bfs.visualization import run_visualizer
 
 
 def print_maze(generated: Gen) -> None:
@@ -11,17 +13,15 @@ def print_maze(generated: Gen) -> None:
 
 data: dict = {
     'entry': (0, 0),
-    'exit': (3, 3),
-    'h': 4,
-    'w': 4
+    'exit': (10, 10),
+    'h': 11,
+    'w': 11
 }
 
 
 def main() -> None:
     gen = Gen(data['w'], data['h'], data['entry'], data['exit'])
-    print_maze(gen)
-    gen.gen_dfs()
-    print_maze(gen)
+    curses.wrapper(run_visualizer, gen)
 
 
 main() if __name__ == "__main__" else None

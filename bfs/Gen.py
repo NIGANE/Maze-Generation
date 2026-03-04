@@ -1,6 +1,8 @@
 from typing import List, Tuple
 from bfs.Cell import Cell
 import random
+import curses
+import time
 
 
 class Gen:
@@ -79,10 +81,11 @@ class Gen:
             # add s.y + 1
             (c.neigbours.append(c.under(s.maze)))
 
-    def gen_bfs(s) -> None:
+    def gen_bfs(s, stdscr, drawer, color) -> None:
         s.visited.append(s.entry)
         queue: List[Cell] = [s.entry]
-        for ele in queue:
+        while queue:
+            ele = queue.pop(random.randint(0, len(queue) - 1))
             nighbours = s.get_valid_neighbours(ele)
             random.shuffle(nighbours)
             for nib in nighbours:
@@ -91,30 +94,83 @@ class Gen:
                     s.break_wall(ele, nib)
                     queue.append(nib)
 
-    def gen_dfs(s) -> None:
+                    drawer(stdscr, s, color)
+                    time.sleep(0.05)
+
+    def gen_dfs(s, stdscr, drawer, color) -> None:
         s.visited.append(s.entry)
         stack: List[Cell] = [s.entry]
         while s.broken_walls < (s.width * s.height) - 1:
-            nighbours = s.get_valid_neighbours(stack[-1])
+            nighbours = [n for n in s.get_valid_neighbours(stack[-1]) if n not in s.visited]
             if len(nighbours) == 0:
                 stack.pop()
             else:
+                ele = stack[-1]
                 target: Cell = random.choice(nighbours)
                 s.visited.append(target)
-                s.break_wall(stack[-1], target)
+                s.break_wall(ele, target)
                 stack.append(target)
 
-    def solve_dfs(s) -> None:
+                drawer(stdscr, s, color)
+                stdscr.refresh()
+                time.sleep(0.05)
+
+    def solve_dfs(s, stdscr, drawer, color) -> None:
+        # 1. Reset visited for the solver specifically
         s.visited = [s.entry]
         stack: List[Cell] = [s.entry]
+        s.entry.is_path = True # Start the path at entry
 
-        while stack[-1] != s.exit:
+        while stack:
             cur: Cell = stack[-1]
-            if len(cur.pt) > 0:
-                target: Cell = random.choice(cur.pt)
+            
+            if cur == s.exit:
+                break # Exit found!
+
+            # 2. Get neighbours where the wall is actually BROKEN
+            # and we haven't visited them yet in this search
+            cur_paths = [c for c in s.get_valid_neighbours(cur) 
+                        if c not in s.visited and s.is_connected(cur, c)]
+
+            if len(cur_paths) > 0:
+                target: Cell = random.choice(cur_paths)
                 s.visited.append(target)
-
-
+                stack.append(target)
+                
+                # Update the state for the drawer
+                target.is_path = True
+                
+                # 3. Animate the forward move
+                drawer(stdscr, s, color)
+                time.sleep(0.1) 
+            else:
+                # 4. BACKTRACKING
+                # Remove the current cell from the visual path
+                bad_path = stack.pop()
+                bad_path.is_path = False
+                
+                # Animate the "shrinking" path
+                drawer(stdscr, s, color)
+                time.sleep(0.05)
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
         return [cell for cell in cell.neigbours if cell not in s.visited]
+
+    def reset_maze(s) -> None:
+        for line in s.maze:
+            for cell in line:
+                cell.val = 15
+                cell.is_path = False
+        s.visited = []
+        s.broken_walls = 0
+
+    def is_connected(self, c1, c2):
+        # If c2 is North of c1, check if c1's North bit (1) is 0
+        if c2.y < c1.y: return not (c1.val & 1)
+        # If c2 is East of c1, check bit 2
+        if c2.x > c1.x: return not (c1.val & 2)
+        # If c2 is South of c1, check bit 4
+        if c2.y > c1.y: return not (c1.val & 4)
+        # If c2 is West of c1, check bit 8
+        if c2.x < c1.x: return not (c1.val & 8)
+        return False

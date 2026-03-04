@@ -7,6 +7,7 @@ class Cell:
         # s.south_wall = True
         # s.east_wall = True
         # s.west_wall = True
+        s.is_path: bool = False
         s.entry = False
         s.exit = False
         s.neigbours: List['Cell'] = []
