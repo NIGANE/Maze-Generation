@@ -1,15 +1,15 @@
-from typing import List, Tuple
-from bfs.Cell import Cell
+from typing import List, Tuple, Dict
+from maze.Cell import Cell
 import random
-import curses
 import time
 
 
 class Gen:
-    def __init__(s, w: int, h: int, en: Tuple[int, int], ex: Tuple[int, int]
+    def __init__(s, conf: dict, en: Tuple[int, int], ex: Tuple[int, int],
                  ) -> None:
-        s.width: int = w
-        s.height: int = h
+        s.width: int = conf['width']
+        s.height: int = conf['height']
+        s.seed: int = conf['seed']
         s.maze: List[List[Cell]] = [
             [Cell(x, y) for x in range(s.width)] for y in range(s.height)
             ]
@@ -23,9 +23,38 @@ class Gen:
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
+        s.apply_42_pattern()
+        if s.entry.reserved:
+            raise ValueError("entry shouldn't belongs to the 42 pattern")
+        elif s.exit.reserved:
+            raise ValueError("exit shouldn't belongs to the 42 pattern")
 
-    def get_map(s) -> List[List[Cell]]:
-        return s.maze
+    def apply_42_pattern(s) -> None:
+        reserved_cells: Dict[int, list[Tuple[int, int]]] = {
+            4: [
+                (0, 0), (1, 0), (2, 0), (2, 1), (3, 1), (4, 1)
+            ],
+            2: [
+                (0, 0), (0, 1), (1, 1), (2, 1), (2, 0), (3, 0),
+                (4, 0), (4, 1)
+            ]
+        }
+        start_y = (s.height // 2) - 2
+        start_x = (s.width // 2) - 3
+
+        for row in s.maze:
+            for cell in row:
+                cell.reserved = False
+
+        for dy, dx in reserved_cells[4]:
+            target_y, target_x = start_y + dy, start_x + dx
+            if 0 <= target_y < s.height and 0 <= target_x < s.width:
+                s.maze[target_y][target_x].reserved = True
+
+        for dy, dx in reserved_cells[2]:
+            target_y, target_x = start_y + dy, (start_x + 3) + dx
+            if 0 <= target_y < s.height and 0 <= target_x < s.width:
+                s.maze[target_y][target_x].reserved = True
 
     def get_rand_choice(s, all: List[Cell]) -> Cell:
         return random.choice(all)
@@ -82,6 +111,7 @@ class Gen:
             (c.neigbours.append(c.under(s.maze)))
 
     def gen_bfs(s, stdscr, drawer, color) -> None:
+        random.seed(s.seed)
         s.visited.append(s.entry)
         queue: List[Cell] = [s.entry]
         while queue:
@@ -95,13 +125,18 @@ class Gen:
                     queue.append(nib)
 
                     drawer(stdscr, s, color)
-                    time.sleep(0.05)
+                    stdscr.refresh()
+                    time.sleep(0.1)
 
     def gen_dfs(s, stdscr, drawer, color) -> None:
+        random.seed(s.seed)
         s.visited.append(s.entry)
         stack: List[Cell] = [s.entry]
         while s.broken_walls < (s.width * s.height) - 1:
-            nighbours = [n for n in s.get_valid_neighbours(stack[-1]) if n not in s.visited]
+            nighbours = [
+                n for n in s.get_valid_neighbours(stack[-1])
+                if n not in s.visited
+                ]
             if len(nighbours) == 0:
                 stack.pop()
             else:
@@ -113,48 +148,42 @@ class Gen:
 
                 drawer(stdscr, s, color)
                 stdscr.refresh()
-                time.sleep(0.05)
+                time.sleep(0.1)
 
     def solve_dfs(s, stdscr, drawer, color) -> None:
-        # 1. Reset visited for the solver specifically
+
         s.visited = [s.entry]
         stack: List[Cell] = [s.entry]
-        s.entry.is_path = True # Start the path at entry
+        s.entry.is_path = True
 
         while stack:
             cur: Cell = stack[-1]
-            
             if cur == s.exit:
-                break # Exit found!
-
-            # 2. Get neighbours where the wall is actually BROKEN
-            # and we haven't visited them yet in this search
-            cur_paths = [c for c in s.get_valid_neighbours(cur) 
-                        if c not in s.visited and s.is_connected(cur, c)]
-
+                break
+            cur_paths = [c for c in s.get_valid_neighbours(cur)
+                         if c not in s.visited and s.is_connected(cur, c)
+                         ]
             if len(cur_paths) > 0:
                 target: Cell = random.choice(cur_paths)
                 s.visited.append(target)
                 stack.append(target)
-                
-                # Update the state for the drawer
                 target.is_path = True
-                
-                # 3. Animate the forward move
                 drawer(stdscr, s, color)
-                time.sleep(0.1) 
+                stdscr.refresh()
+                time.sleep(0.1)
             else:
-                # 4. BACKTRACKING
-                # Remove the current cell from the visual path
                 bad_path = stack.pop()
                 bad_path.is_path = False
-                
-                # Animate the "shrinking" path
                 drawer(stdscr, s, color)
-                time.sleep(0.05)
+                stdscr.refresh()
+                time.sleep(0.1)
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
-        return [cell for cell in cell.neigbours if cell not in s.visited]
+        return [
+            cell for cell in cell.neigbours
+            if cell not in s.visited
+            and not cell.reserved
+            ]
 
     def reset_maze(s) -> None:
         for line in s.maze:
@@ -165,12 +194,12 @@ class Gen:
         s.broken_walls = 0
 
     def is_connected(self, c1, c2):
-        # If c2 is North of c1, check if c1's North bit (1) is 0
-        if c2.y < c1.y: return not (c1.val & 1)
-        # If c2 is East of c1, check bit 2
-        if c2.x > c1.x: return not (c1.val & 2)
-        # If c2 is South of c1, check bit 4
-        if c2.y > c1.y: return not (c1.val & 4)
-        # If c2 is West of c1, check bit 8
-        if c2.x < c1.x: return not (c1.val & 8)
+        if c2.y < c1.y:
+            return not (c1.val & 1)
+        if c2.x > c1.x:
+            return not (c1.val & 2)
+        if c2.y > c1.y:
+            return not (c1.val & 4)
+        if c2.x < c1.x:
+            return not (c1.val & 8)
         return False

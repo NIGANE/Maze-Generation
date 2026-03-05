@@ -8,13 +8,14 @@ class Cell:
         # s.east_wall = True
         # s.west_wall = True
         s.is_path: bool = False
-        s.entry = False
-        s.exit = False
+        s.entry: bool = False
+        s.exit: bool = False
         s.neigbours: List['Cell'] = []
         s.pt: List['Cell'] = []
         s.x: int = x
         s.y: int = y
-        s.val = 15
+        s.val: int = 15
+        s.reserved: bool = False
 
     def __str__(s) -> str:
         return f"cell({s.x}, {s.y})"

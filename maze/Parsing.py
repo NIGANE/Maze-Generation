@@ -1,5 +1,4 @@
-import random
-from typing import Union, Optional, List
+from typing import Optional, List
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -9,10 +8,10 @@ def is_empty(s: str) -> bool:
 
 class Parsing(BaseModel):
     width: int = Field(
-        ge=15, description="width conf should be greater than 10"
+        ge=6, description="width conf should be greater than 6"
         )
     height: int = Field(
-        ge=15, description="height conf should be greater than 10"
+        ge=7, description="height conf should be greater than 6"
     )
     entry: tuple = Field(
         description="enty should be valid cordinates x,y"
@@ -22,6 +21,7 @@ class Parsing(BaseModel):
     )
     output_file: str = Field(
         max_length=10,
+        min_length=3,
         description="output file should be of type string with max length 10"
     )
     perfect: bool = Field(
@@ -30,7 +30,7 @@ class Parsing(BaseModel):
     seed: Optional[int] = Field(
         description="seed field should be valid number"
     )
-    rn: Union[int, float, None]
+    seeded: bool = False
 
     @staticmethod
     def get_conf(data: str) -> dict:
@@ -48,6 +48,9 @@ class Parsing(BaseModel):
             elif ele.startswith('='):
                 raise ValueError(
                     "invalid configuration syntax, line starts with '='")
+            elif "=" not in ele:
+                raise ValueError(
+                    "invalid configuration syntax, line without '='")
         req_conf: List[str] = [
             'width', 'height', 'entry', 'exit', 'seed', 'perfect',
             'output_file'
@@ -75,17 +78,17 @@ class Parsing(BaseModel):
     def finishing(s) -> 'Parsing':
         s.entry = s.to_int(s.entry)
         s.exit = s.to_int(s.exit)
-        random.seed() if s.seed is None else random.seed(s.seed)
-        s.rn = random.random()
-        if s.entry[0] > s.width or s.entry[1] > s.height:
+        if (s.seed is not None):
+            s.seeded = True
+        if s.entry[0] >= s.width or s.entry[1] >= s.height:
             raise ValueError(
-                f"entry cordinates ({s.entry[0]},{s.entry[1]}) out of "
-                f"maze range w={s.width}, h={s.height}"
+                f"entry({s.entry[0]},{s.entry[1]}) cordinates out of "
+                f"maze dimentions w={s.width}, h={s.height}"
                 )
-        if s.exit[0] > s.width or s.exit[1] > s.height:
+        if s.exit[0] >= s.width or s.exit[1] >= s.height:
             raise ValueError(
-                f"exit cordinates ({s.exit[0]},{s.exit[1]}) out of "
-                f"maze range w={s.width}, h={s.height}"
+                f"exit({s.exit[0]},{s.exit[1]}) cordinates out of "
+                f"maze dimentions w={s.width}, h={s.height}"
                 )
         return s
 
@@ -97,9 +100,9 @@ class Parsing(BaseModel):
         elif 'height' not in data:
             raise ValueError("there is no height on configuration file")
         if not Parsing.valid_numbers(data['width']):
-            raise ValueError("width value not a valid number")
+            raise ValueError("width value not a valid positive number")
         elif not Parsing.valid_numbers(data['height']):
-            raise ValueError("height value not a valid number")
+            raise ValueError("height value not a valid positive number")
         if 'entry' not in data:
             raise ValueError("no entry provided on configuration file")
         elif 'exit' not in data:
@@ -123,5 +126,4 @@ class Parsing(BaseModel):
             raise ValueError("perfect filed is required")
         if 'seed' not in data:
             data['seed'] = None
-        data['rn'] = None
         return data

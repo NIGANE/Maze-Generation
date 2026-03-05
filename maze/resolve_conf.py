@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
-from Parsing import Parsing
-from Errors import BaseConfFileErrors, FileEmptyError
+from maze.Parsing import Parsing
+from maze.Errors import BaseConfFileErrors, FileEmptyError
 from pydantic import ValidationError
 
 
