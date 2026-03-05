@@ -1,0 +1,14 @@
+d39553913b
+ba83d2eac2
+86ec3c56ba
+c3f96ff96a
+bafc17f856
+aaffaffa93
+aabfafd2ea
+86afaffc52
+c3c5291796
+d4556ec547
+
+0,0
+9,9
+path from entry to the exit

@@ -7,6 +7,7 @@ import time
 class Gen:
     def __init__(s, conf: dict, en: Tuple[int, int], ex: Tuple[int, int],
                  ) -> None:
+        s.output_file: str = conf['output_file']
         s.width: int = conf['width']
         s.height: int = conf['height']
         s.seed: int = conf['seed']
@@ -18,8 +19,9 @@ class Gen:
         s.entry.entry = True
         s.exit.exit = True
         s.nib: List[Cell] = []
-        s.visited: list[Cell] = []
+        s.visited: List[Cell] = []
         s.broken_walls: int = 0
+        s.out_path: List[str] = []
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -110,6 +112,28 @@ class Gen:
             # add s.y + 1
             (c.neigbours.append(c.under(s.maze)))
 
+    def gen_file(s) -> None:
+        with open(s.output_file, 'w') as file:
+            hex = "0123456789abcdef" 
+            for line in s.maze:
+                for cell in line:
+                    file.write(hex[cell.val % 16])
+                file.write("\n")
+            file.write("\n")
+            file.write(f"{s.entry.x},{s.entry.y}\n")
+            file.write(f"{s.exit.x},{s.exit.y}\n")
+            file.write("path from entry to the exit")
+
+    def resolve_path(s, c1, c2) -> List[str]:
+        if (c1.val & 1) and (c2.val & 4):
+            s.out_path.append('N')
+        if (c1.val & 2) and (c2.val & 8):
+            s.out_path.append('E')
+        if (c1.val & 4) and (c2.val & 1):
+            s.out_path.append('S')
+        if (c1.val & 8) and (c2.val & 2):
+            s.out_path.append("W")
+        return s.out_path
     def gen_bfs(s, stdscr, drawer, color) -> None:
         random.seed(s.seed)
         s.visited.append(s.entry)
@@ -170,15 +194,18 @@ class Gen:
                 s.visited.append(target)
                 stack.append(target)
                 target.is_path = True
+                s.out_path(cur, target)
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
             else:
                 bad_path = stack.pop()
+                s.out_path.pop()
                 bad_path.is_path = False
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
+        s.gen_file()
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
         return [

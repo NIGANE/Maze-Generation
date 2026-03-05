@@ -3,10 +3,6 @@ from typing import List
 
 class Cell:
     def __init__(s, x, y) -> None:
-        # s.north_wall = True
-        # s.south_wall = True
-        # s.east_wall = True
-        # s.west_wall = True
         s.is_path: bool = False
         s.entry: bool = False
         s.exit: bool = False
