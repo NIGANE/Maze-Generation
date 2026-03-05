@@ -133,6 +133,8 @@ class Gen:
         s.visited.append(s.entry)
         stack: List[Cell] = [s.entry]
         while s.broken_walls < (s.width * s.height) - 1:
+            if (len(stack) == 0):
+                break
             nighbours = [
                 n for n in s.get_valid_neighbours(stack[-1])
                 if n not in s.visited
