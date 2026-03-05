@@ -1,4 +1,7 @@
+all:
+	python3 -m maze.main
 
 
-main:
-	@python3 main.py
+clean:
+	@rm -rf */__pycache__
+	@rm -rf .mypy_cache
