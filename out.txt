@@ -1,14 +1,14 @@
-d39553913b
-ba83d2eac2
-86ec3c56ba
-c3f96ff96a
-bafc17f856
-aaffaffa93
-aabfafd2ea
-86afaffc52
-c3c5291796
-d4556ec547
+d55553d153
+953d3c5696
+83c38553c3
+eafaaffa96
+92fc07fec3
+aeffaff956
+c13fafd293
+96efeffaaa
+85395396ea
+c7c47c4556
 
 0,0
 9,9
-path from entry to the exit
+NSNSNSNSSNESNSNSNESNSWNESNSWNSSWEWESNSNSN

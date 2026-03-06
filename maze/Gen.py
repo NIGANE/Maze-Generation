@@ -122,7 +122,9 @@ class Gen:
             file.write("\n")
             file.write(f"{s.entry.x},{s.entry.y}\n")
             file.write(f"{s.exit.x},{s.exit.y}\n")
-            file.write("path from entry to the exit")
+            for char in s.out_path:
+                file.write(char)
+            file.write("\n")
 
     def resolve_path(s, c1, c2) -> List[str]:
         if (c1.val & 1) and (c2.val & 4):
@@ -194,7 +196,7 @@ class Gen:
                 s.visited.append(target)
                 stack.append(target)
                 target.is_path = True
-                s.out_path(cur, target)
+                s.resolve_path(cur, target)
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
