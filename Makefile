@@ -2,7 +2,7 @@
 pp = poetry
 
 install:
-	pp install
+	$(pp) install
 
 run:
 	$(pp) env activate | xclip -selection clipboard
