@@ -23,6 +23,7 @@ class Gen:
         s.broken_walls: int = 0
         s.out_path: List[str] = []
         s.solution_path: List[Cell] = []
+        s.generated = False
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -157,6 +158,7 @@ class Gen:
                     drawer(stdscr, s, color)
                     stdscr.refresh()
                     time.sleep(0.1)
+        s.generated = True
 
     def gen_dfs(s, stdscr, drawer, color) -> None:
         random.seed(s.seed)
@@ -181,12 +183,15 @@ class Gen:
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
+        s.generated = True
 
     def solve_dfs(s, stdscr, drawer, color) -> None:
 
         s.visited = [s.entry]
         stack: List[Cell] = [s.entry]
         s.entry.is_path = True
+        if (not s.generated):
+            return
 
         while stack:
             cur: Cell = stack[-1]
@@ -227,6 +232,7 @@ class Gen:
                 cell.is_path = False
         s.visited = []
         s.broken_walls = 0
+        s.generated = False
 
     def is_connected(self, c1, c2):
         if c2.y < c1.y:
