@@ -22,6 +22,7 @@ class Gen:
         s.visited: List[Cell] = []
         s.broken_walls: int = 0
         s.out_path: List[str] = []
+        s.solution_path: List[Cell] = []
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -126,16 +127,19 @@ class Gen:
                 file.write(char)
             file.write("\n")
 
-    def resolve_path(s, c1, c2) -> List[str]:
-        if (c1.val & 1) and (c2.val & 4):
-            s.out_path.append('N')
-        if (c1.val & 2) and (c2.val & 8):
-            s.out_path.append('E')
-        if (c1.val & 4) and (c2.val & 1):
-            s.out_path.append('S')
-        if (c1.val & 8) and (c2.val & 2):
-            s.out_path.append("W")
-        return s.out_path
+    def resolve_path(s) -> None:
+        for i in range(len(s.solution_path) - 1):
+            c1 = s.solution_path[i]
+            c2 = s.solution_path[i + 1]
+            if c2.y < c1.y and s.is_connected(c1, c2):
+                s.out_path.append('N')
+            if c2.x > c1.x and s.is_connected(c1, c2):
+                s.out_path.append('E')
+            if c2.y > c1.y and s.is_connected(c1, c2):
+                s.out_path.append('S')
+            if c2.x < c1.x and s.is_connected(c1, c2):
+                s.out_path.append('W')
+
     def gen_bfs(s, stdscr, drawer, color) -> None:
         random.seed(s.seed)
         s.visited.append(s.entry)
@@ -196,17 +200,17 @@ class Gen:
                 s.visited.append(target)
                 stack.append(target)
                 target.is_path = True
-                s.resolve_path(cur, target)
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
             else:
                 bad_path = stack.pop()
-                s.out_path.pop()
                 bad_path.is_path = False
                 drawer(stdscr, s, color)
                 stdscr.refresh()
                 time.sleep(0.1)
+        s.solution_path = stack
+        s.resolve_path()
         s.gen_file()
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:

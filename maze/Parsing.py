@@ -14,10 +14,10 @@ class Parsing(BaseModel):
         ge=7, description="height conf should be greater than 6"
     )
     entry: tuple = Field(
-        description="enty should be valid cordinates x,y"
+        description="enty should be valid coordinates x,y"
     )
     exit: tuple = Field(
-        description="exit should be valid cordinates x,y"
+        description="exit should be valid coordinates x,y"
     )
     output_file: str = Field(
         max_length=10,
@@ -78,16 +78,19 @@ class Parsing(BaseModel):
     def finishing(s) -> 'Parsing':
         s.entry = s.to_int(s.entry)
         s.exit = s.to_int(s.exit)
+        if s.entry == s.exit:
+            raise ValueError(
+                "exit coordinates sould be different than entry coordinates")
         if (s.seed is not None):
             s.seeded = True
         if s.entry[0] >= s.width or s.entry[1] >= s.height:
             raise ValueError(
-                f"entry({s.entry[0]},{s.entry[1]}) cordinates out of "
+                f"entry({s.entry[0]},{s.entry[1]}) coordinates out of "
                 f"maze dimentions w={s.width}, h={s.height}"
                 )
         if s.exit[0] >= s.width or s.exit[1] >= s.height:
             raise ValueError(
-                f"exit({s.exit[0]},{s.exit[1]}) cordinates out of "
+                f"exit({s.exit[0]},{s.exit[1]}) coordinates out of "
                 f"maze dimentions w={s.width}, h={s.height}"
                 )
         return s
