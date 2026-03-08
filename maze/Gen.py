@@ -11,6 +11,7 @@ class Gen:
         s.width: int = conf['width']
         s.height: int = conf['height']
         s.seed: int = conf['seed']
+        s.perfect: bool = conf.get('perfect', True)
         s.maze: List[List[Cell]] = [
             [Cell(x, y) for x in range(s.width)] for y in range(s.height)
             ]
@@ -23,7 +24,9 @@ class Gen:
         s.broken_walls: int = 0
         s.out_path: List[str] = []
         s.solution_path: List[Cell] = []
-        s.generated = False
+        s.generated: bool = False
+        s.is_solved: bool = True
+        s.stored_solve: List[Cell] = []
         for line in s.maze:
             for cell in line:
                 s.conf_nighbours(cell)
@@ -116,7 +119,7 @@ class Gen:
 
     def gen_file(s) -> None:
         with open(s.output_file, 'w') as file:
-            hex = "0123456789abcdef" 
+            hex = "0123456789abcdef"
             for line in s.maze:
                 for cell in line:
                     file.write(hex[cell.val % 16])
