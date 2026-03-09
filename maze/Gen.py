@@ -196,6 +196,15 @@ class Gen:
         if (not s.generated):
             return
 
+        if (s.is_solved):
+            s.stored_solve = s.solution_path
+            s.is_solved = False
+            for cell in s.solution_path:
+                cell.is_path = False
+                drawer(stdscr, s, color)
+                stdscr.refresh()
+                time.sleep(0.1)
+
         while stack:
             cur: Cell = stack[-1]
             if cur == s.exit:
@@ -220,6 +229,7 @@ class Gen:
         s.solution_path = stack
         s.resolve_path()
         s.gen_file()
+        s.is_solved = True
 
     def get_valid_neighbours(s, cell: Cell) -> List[Cell]:
         return [
