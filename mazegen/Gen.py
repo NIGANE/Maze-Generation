@@ -231,7 +231,7 @@ class Gen:
 
                     drawer(stdscr, s, color)
                     stdscr.refresh()
-                    time.sleep(0.03)
+                    time.sleep(0.05)
 
         # make imperfect if configured
         if not s.perfect:
@@ -278,7 +278,7 @@ class Gen:
 
                 drawer(stdscr, s, color)
                 stdscr.refresh()
-                time.sleep(0.03)
+                time.sleep(0.05)
 
         if not s.perfect:
             s.make_imperfect()
@@ -314,7 +314,7 @@ class Gen:
             s.stored_solution = s.solution_path
             drawer(stdscr, s, color)
             stdscr.refresh()
-            time.sleep(0.03)
+            time.sleep(0.05)
             return
 
         if (len(s.stored_solution) > 0):
@@ -322,7 +322,7 @@ class Gen:
                 cell.is_path = True
                 drawer(stdscr, s, color)
                 stdscr.refresh()
-                time.sleep(0.03)
+                time.sleep(0.05)
                 s.is_solved = True
             return
 
@@ -340,13 +340,13 @@ class Gen:
                 target.is_path = True
                 drawer(stdscr, s, color)
                 stdscr.refresh()
-                time.sleep(0.03)
+                time.sleep(0.05)
             else:
                 bad_path = stack.pop()
                 bad_path.is_path = False
                 drawer(stdscr, s, color)
                 stdscr.refresh()
-                time.sleep(0.03)
+                time.sleep(0.05)
         s.solution_path = stack
         s.resolve_path()
         s.gen_file()
