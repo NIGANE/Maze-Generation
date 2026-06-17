@@ -11,10 +11,15 @@
 
 ![image_alt](https://github.com/NIGANE/Maze-Generation/blob/629728d916ab96197a3ea9ee2c14006289b085b2/asst/Screenshot%20from%202026-03-09%2014-53-16.png)
 
-Install
+Install:
 ```bash
 git clone git@github.com:nigane/maze-generation
 cd maze-generation
 make install
 ```
+Run:
+```bash
+make all
+```
+ - for more instructions i recommand to read makefile file 👽
 
